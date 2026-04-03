@@ -9,8 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "scripts": {
-  "build": "npx expo export"
-}
+      "build": "npx expo export"
+    }
   },
   "dependencies": {
     "@expo/metro-runtime": "~55.0.6",
@@ -59,6 +59,7 @@
     "stripe": "^20.4.1"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.5.0",

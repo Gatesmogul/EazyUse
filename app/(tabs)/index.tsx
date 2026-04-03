@@ -1,86 +1,90 @@
-// app/(tabs)/index.tsx
+// app/index.tsx
 
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  Dimensions,
-  ScrollView,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { useRouter } from "expo-router";
 
-const { width, height } = Dimensions.get("window");
+export default function Index() {
+  const router = useRouter();
 
-export default function HomeScreen() {
+  // Track which auth screen to navigate to
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const routes = [
+      "/(auth)/SignUp",
+      "/(auth)/SignIn",
+      "/(auth)/ForgotPassword",
+    ];
+
+    // Show splash for a short time, then redirect
+    const timer = setTimeout(() => {
+      router.replace(routes[step]);
+    }, 2500); // 2.5 seconds flash
+
+    return () => clearTimeout(timer);
+  }, [step]);
+
+  // Cycle through routes (optional continuous loop)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStep((prev) => (prev + 1) % 3);
+    }, 8000); // change route every 8 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.container}>
+    <View style={styles.container}>
+      <View style={styles.card}>
+        <Text style={styles.title}>EazyUse</Text>
 
-          <Text style={styles.title}>
-            Welcome to EazyUse! 👋
-          </Text>
+        <Text style={styles.message}>
+          You are welcome to EazyUse app. From here you can access payments,
+          messaging, tasks, professionals, wallet services and more.
+        </Text>
 
-          <Text style={styles.subtitle}>
-            This is the main dashboard of the EazyUse app.
-            From here you can access payments, messaging,
-            tasks, professionals, wallet services and more.
-          </Text>
-
-          <Text style={styles.info}>
-            Use the navigation tabs to explore different
-            features of the platform.
-          </Text>
-
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        <ActivityIndicator size="large" color="#1D4ED8" style={styles.loader} />
+      </View>
+    </View>
   );
 }
 
-/* ---------------- STYLES ---------------- */
+/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
-
-  safe: {
+  container: {
     flex: 1,
-    backgroundColor: "#F4F6F8",
-  },
-
-  scrollContainer: {
-    flexGrow: 1,
+    backgroundColor: "#F9FAFB",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: width * 0.08,
+    padding: 20,
   },
 
-  container: {
-    width: "100%",
+  card: {
+    backgroundColor: "#FFFFFF",
+    padding: 30,
+    borderRadius: 16,
     alignItems: "center",
+    elevation: 4,
+    width: "100%",
   },
 
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "700",
-    color: "#111827",
-    textAlign: "center",
-    marginBottom: height * 0.02,
+    color: "#1D4ED8",
+    marginBottom: 15,
   },
 
-  subtitle: {
-    fontSize: 16,
-    color: "#374151",
+  message: {
+    fontSize: 15,
+    color: "#4B5563",
     textAlign: "center",
-    marginBottom: height * 0.02,
     lineHeight: 22,
   },
 
-  info: {
-    fontSize: 14,
-    color: "#6B7280",
-    textAlign: "center",
-    lineHeight: 20,
+  loader: {
+    marginTop: 25,
   },
-
 });

@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: EazyUse
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install --legacy-peer-deps
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.12.0

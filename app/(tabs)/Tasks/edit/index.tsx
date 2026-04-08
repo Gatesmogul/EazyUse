@@ -8,7 +8,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "backend/services/firebase";
+import { db } from "@services/firebase";
 import { useRouter } from "expo-router";
 
 interface Task {

@@ -13,7 +13,7 @@ import {
 import { Stack, useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { db } from "backend/services/firebase";
+import { db } from "@services/firebase";
 import  {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";

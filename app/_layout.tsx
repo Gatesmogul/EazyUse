@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View } from "react-native"
 
-// Import your Firebase auth instance
+// Path alias updated for consistency
 import { auth } from "../backend/services/firebase";
 
-// Initialize the Query Client outside the component
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
+  
+  const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -23,7 +25,22 @@ export default function RootLayout() {
     return unsubscribe;
   }, []);
 
-  // 1. Loader: Keep this inside the component but BEFORE the return
+  // Professional Protection Logic
+  useEffect(() => {
+    if (initializing) return;
+
+    // Check if the user is currently in the (auth) group
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!user && !inAuthGroup) {
+      // If not logged in and trying to access tabs, redirect to login
+      router.replace("/(auth)/SignIn");
+    } else if (user && inAuthGroup) {
+      // If logged in and trying to access auth screens, redirect to tabs
+      router.replace("/(tabs)");
+    }
+  }, [user, initializing, segments]);
+
   if (initializing) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
@@ -34,38 +51,11 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: "slide_from_right",
-        }}
-      >
-        {/* The Conditional Switch: 
-          This is what removes the tab icons from the sign-in screen.
-        */}
-        {!user ? (
-          <Stack.Screen 
-            name="(auth)" 
-            options={{ 
-              headerShown: false,
-              gestureEnabled: false 
-            }} 
-          />
-        ) : (
-          <Stack.Screen 
-            name="(tabs)" 
-            options={{ 
-              headerShown: false,
-              gestureEnabled: false 
-            }} 
-          />
-        )}
-
-        {/* IMPORTANT: Remove "index" from here if your app/index.tsx 
-          is just a redirector. If you keep it here, ensure it 
-          doesn't contain a <Tabs /> component.
-        */}
-        <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
+        {/* We define the stacks, but the useEffect above handles the jumping */}
+        <Stack.Screen name="(auth)" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="index" />
       </Stack>
     </QueryClientProvider>
   );

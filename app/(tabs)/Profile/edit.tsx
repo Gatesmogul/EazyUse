@@ -16,7 +16,7 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 import * as ImagePicker from "expo-image-picker";
 import { ImageSourcePropType } from "react-native";
 
-import { auth, db, storage } from "@services/firebase";
+import { auth, db, storage } from "../../../backend/services/firebase";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";

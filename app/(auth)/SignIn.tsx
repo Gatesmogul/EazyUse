@@ -8,16 +8,18 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
-// Firebase Imports
-import { auth } from "../../backend/services/firebase";
+// Firebase Imports - Updated to use the professional path alias
+import { auth } from "@services/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
+/**
+ * Clean & Professional SignIn Component
+ */
 export default function SignIn() {
   const router = useRouter();
 
@@ -28,10 +30,10 @@ export default function SignIn() {
   const [error, setError] = useState("");
 
   /**
-   * Handlers
+   * Logic: Handle Firebase Authentication
    */
   const handleSignIn = async () => {
-    // Basic Validation
+    // 1. Basic Validation
     if (!email.trim() || !password.trim()) {
       setError("Please enter both email and password");
       return;
@@ -41,23 +43,21 @@ export default function SignIn() {
     setError("");
 
     try {
-      // 1. Authenticate with Firebase
+      // 2. Authenticate with Firebase
       await signInWithEmailAndPassword(auth, email.trim(), password);
 
-      /** * 2. Navigation
-       * We use router.replace to prevent the user from going back to Login.
-       * Because your _layout.tsx is conditional, switching 'isAuthenticated' 
-       * to true will automatically unmount the (auth) stack.
+      /** * 3. Navigation
+       * Using replace ensures the Login screen is removed from the history stack.
        */
       router.replace("/(tabs)"); 
       
     } catch (err: any) {
-      console.error("Sign-in error:", err.code, err.message);
+      console.error("Sign-in error:", err.code);
       
       // Professional error mapping
       const friendlyError = err.code === "auth/invalid-credential" 
         ? "Invalid email or password. Please try again."
-        : "An error occurred during sign-in.";
+        : "An error occurred. Please check your connection.";
         
       setError(friendlyError);
     } finally {
@@ -72,21 +72,22 @@ export default function SignIn() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.card}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>
-            Sign in to continue using EazyUse
-          </Text>
+          <View style={styles.header}>
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Sign in to continue using EazyUse</Text>
+          </View>
 
+          {/* ERROR FEEDBACK */}
           {error ? (
             <View style={styles.errorBox}>
-              <Ionicons name="alert-circle" size={16} color="#DC2626" />
+              <Ionicons name="alert-circle" size={18} color="#DC2626" />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
 
           {/* EMAIL INPUT */}
           <View style={[styles.inputContainer, error && styles.inputError]}>
-            <Ionicons name="mail-outline" size={18} color="#6B7280" />
+            <Ionicons name="mail-outline" size={20} color="#6B7280" />
             <TextInput
               style={styles.input}
               placeholder="Email Address"
@@ -96,14 +97,14 @@ export default function SignIn() {
               value={email}
               onChangeText={(text) => {
                 setEmail(text);
-                if (error) setError(""); // Clear error when user types
+                if (error) setError(""); 
               }}
             />
           </View>
 
           {/* PASSWORD INPUT */}
           <View style={[styles.inputContainer, error && styles.inputError]}>
-            <Ionicons name="lock-closed-outline" size={18} color="#6B7280" />
+            <Ionicons name="lock-closed-outline" size={20} color="#6B7280" />
             <TextInput
               style={styles.input}
               placeholder="Password"
@@ -116,7 +117,7 @@ export default function SignIn() {
             />
           </View>
 
-          {/* SIGN IN BUTTON */}
+          {/* SIGN IN ACTION */}
           <Pressable
             style={({ pressed }) => [
               styles.button,
@@ -133,7 +134,7 @@ export default function SignIn() {
             )}
           </Pressable>
 
-          {/* LINKS */}
+          {/* FOOTER NAVIGATION */}
           <View style={styles.footer}>
             <Pressable onPress={() => router.push("/(auth)/ForgotPassword")}>
               <Text style={styles.link}>Forgot Password?</Text>
@@ -159,95 +160,106 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    padding: 24,
+    padding: 20,
   },
   card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 28,
-    // Shadow for iOS
+    borderRadius: 24,
+    padding: 24,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    // Elevation for Android
-    elevation: 5,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    elevation: 4,
+  },
+  header: {
+    marginBottom: 28,
   },
   title: {
     fontSize: 28,
-    fontWeight: "700",
-    color: "#0A2540",
-    marginBottom: 8,
+    fontWeight: "800",
+    color: "#0F172A",
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
-    color: "#6B7280",
-    marginBottom: 24,
+    color: "#64748B",
+    marginTop: 4,
   },
   errorBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FEF2F2",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    gap: 8,
+    backgroundColor: "#FFF1F2",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 20,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#FECDD3",
   },
   errorText: {
-    color: "#DC2626",
-    fontSize: 13,
+    color: "#BE123C",
+    fontSize: 14,
     fontWeight: "500",
+    flex: 1,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 12,
-    paddingHorizontal: 14,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderRadius: 14,
+    paddingHorizontal: 16,
     marginBottom: 16,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F8FAFC",
   },
   inputError: {
-    borderColor: "#FCA5A5",
+    borderColor: "#FDA4AF",
+    backgroundColor: "#FFF1F2",
   },
   input: {
     flex: 1,
     paddingVertical: 14,
-    marginLeft: 10,
+    marginLeft: 12,
     fontSize: 16,
-    color: "#1F2937",
+    color: "#1E293B",
   },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#2563EB",
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 10,
+    shadowColor: "#2563EB",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   buttonPressed: {
-    opacity: 0.8,
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
   },
   buttonDisabled: {
-    backgroundColor: "#93C5FD",
+    backgroundColor: "#94A3B8",
+    shadowOpacity: 0,
   },
   buttonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   footer: {
-    marginTop: 20,
+    marginTop: 24,
     alignItems: "center",
-    gap: 16,
+    gap: 18,
   },
   footerText: {
     fontSize: 14,
-    color: "#6B7280",
+    color: "#64748B",
   },
   link: {
     fontSize: 14,
-    color: "#007BFF",
-    fontWeight: "600",
+    color: "#2563EB",
+    fontWeight: "700",
   },
 });

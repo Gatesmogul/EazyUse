@@ -11,8 +11,8 @@ import {
 import { Stack, useRouter } from "expo-router";
 import * as Device from "expo-device";
 import * as Network from "expo-network";
-import { logFraudActivity, checkFailedLogins } from "backend/services/fraudService";
-import { auth } from "backend/services/firebase";
+import { logFraudActivity, checkFailedLogins } from "@services/fraudService";
+import { auth } from "@services/firebase";
 import { signOut } from "firebase/auth";
 
 // Web-compatible device name

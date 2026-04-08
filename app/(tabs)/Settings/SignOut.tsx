@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import { View, Text, StyleSheet, Dimensions, Platform } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { Button, ActivityIndicator } from "react-native-paper";
-import { auth } from "backend/services/firebase"; // firebase auth service
+import { auth } from "@services/firebase"; // firebase auth service
 
 import LottieView from "lottie-react-native";
 // import successAnimationData from "@/assets/animations/success.json";

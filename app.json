@@ -5,6 +5,9 @@
     "version": "1.0.0",
     "sdkVersion": "50.0.0",
     "platforms": ["ios", "android", "web"],
+    "experiments": {
+      "tsconfigPaths": true
+    },
     "plugins": [
       "expo-router",
       "expo-sharing"

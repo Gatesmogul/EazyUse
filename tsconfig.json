@@ -4,26 +4,25 @@
     "jsx": "react-jsx",
     "strict": true,
     "skipLibCheck": true,
-
-    "baseUrl": ".",
-
+    
+    /* Path Aliases - Removed baseUrl and updated paths to be root-relative */
+    
     "paths": {
-      "@/*": ["app/*"],
-      "@assets/*": ["assets/*"],
-      "@services/*": ["backend/services/*"],
-      "@components/*": ["components/*"]
+      "@/*": ["./app/*"],
+      "@assets/*": ["./assets/*"],
+      "@services/*": ["./backend/services/*"],
+      "@components/*": ["./components/*"]
     },
 
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-
     "moduleResolution": "bundler"
   },
-
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "**/*.d.ts"
+    ".expo/types/**/*.ts", 
+    "expo-env.d.ts"
   ]
 }

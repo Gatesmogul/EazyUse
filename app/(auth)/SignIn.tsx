@@ -1,5 +1,3 @@
-// app/(auth)/SignIn.tsx
-
 import React, { useState } from "react";
 import {
   View,
@@ -10,28 +8,32 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
+// Firebase Imports
 import { auth } from "../../backend/services/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function SignIn() {
   const router = useRouter();
 
+  // State Management
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  /* ---------------- SIGN IN ---------------- */
-
+  /**
+   * Handlers
+   */
   const handleSignIn = async () => {
+    // Basic Validation
     if (!email.trim() || !password.trim()) {
-      setError("Email and password are required");
+      setError("Please enter both email and password");
       return;
     }
 
@@ -39,66 +41,88 @@ export default function SignIn() {
     setError("");
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      // 1. Authenticate with Firebase
+      await signInWithEmailAndPassword(auth, email.trim(), password);
 
-      // Navigate to main app
-      router.replace("/(tabs)/Home");
+      /** * 2. Navigation
+       * We use router.replace to prevent the user from going back to Login.
+       * Because your _layout.tsx is conditional, switching 'isAuthenticated' 
+       * to true will automatically unmount the (auth) stack.
+       */
+      router.replace("/(tabs)"); 
+      
     } catch (err: any) {
-      console.log(err);
-      setError(err.message || "Invalid email or password");
+      console.error("Sign-in error:", err.code, err.message);
+      
+      // Professional error mapping
+      const friendlyError = err.code === "auth/invalid-credential" 
+        ? "Invalid email or password. Please try again."
+        : "An error occurred during sign-in.";
+        
+      setError(friendlyError);
     } finally {
       setLoading(false);
     }
   };
 
-  /* ---------------- UI ---------------- */
-
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.card}>
-
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>
             Sign in to continue using EazyUse
           </Text>
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? (
+            <View style={styles.errorBox}>
+              <Ionicons name="alert-circle" size={16} color="#DC2626" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
 
-          {/* EMAIL */}
-
-          <View style={styles.inputContainer}>
+          {/* EMAIL INPUT */}
+          <View style={[styles.inputContainer, error && styles.inputError]}>
             <Ionicons name="mail-outline" size={18} color="#6B7280" />
             <TextInput
               style={styles.input}
               placeholder="Email Address"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (error) setError(""); // Clear error when user types
+              }}
             />
           </View>
 
-          {/* PASSWORD */}
-
-          <View style={styles.inputContainer}>
+          {/* PASSWORD INPUT */}
+          <View style={[styles.inputContainer, error && styles.inputError]}>
             <Ionicons name="lock-closed-outline" size={18} color="#6B7280" />
             <TextInput
               style={styles.input}
               placeholder="Password"
               secureTextEntry
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (error) setError("");
+              }}
             />
           </View>
 
           {/* SIGN IN BUTTON */}
-
           <Pressable
-            style={styles.button}
+            style={({ pressed }) => [
+              styles.button,
+              pressed && styles.buttonPressed,
+              loading && styles.buttonDisabled,
+            ]}
             onPress={handleSignIn}
             disabled={loading}
           >
@@ -109,104 +133,121 @@ export default function SignIn() {
             )}
           </Pressable>
 
-          {/* FORGOT PASSWORD */}
+          {/* LINKS */}
+          <View style={styles.footer}>
+            <Pressable onPress={() => router.push("/(auth)/ForgotPassword")}>
+              <Text style={styles.link}>Forgot Password?</Text>
+            </Pressable>
 
-          <Pressable onPress={() => router.push("/(auth)/ForgotPassword")}>
-            <Text style={styles.link}>Forgot Password?</Text>
-          </Pressable>
-
-          {/* SIGN UP REDIRECT */}
-
-          <Pressable onPress={() => router.push("/(auth)/SignUp")}>
-            <Text style={styles.link}>
-              Don't have an account? Sign Up
-            </Text>
-          </Pressable>
-
+            <Pressable onPress={() => router.push("/(auth)/SignUp")}>
+              <Text style={styles.footerText}>
+                Don't have an account? <Text style={styles.link}>Sign Up</Text>
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-/* ---------------- STYLES ---------------- */
-
 const styles = StyleSheet.create({
-
   safe: {
     flex: 1,
     backgroundColor: "#F4F6F8",
   },
-
   container: {
     flex: 1,
     justifyContent: "center",
     padding: 24,
   },
-
   card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 24,
-
+    borderRadius: 20,
+    padding: 28,
+    // Shadow for iOS
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    // Elevation for Android
+    elevation: 5,
   },
-
   title: {
     fontSize: 28,
     fontWeight: "700",
     color: "#0A2540",
+    marginBottom: 8,
   },
-
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#6B7280",
-    marginBottom: 20,
+    marginBottom: 24,
   },
-
+  errorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    gap: 8,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 13,
+    fontWeight: "500",
+  },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    marginBottom: 14,
-    backgroundColor: "#FFF",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    marginBottom: 16,
+    backgroundColor: "#F9FAFB",
   },
-
+  inputError: {
+    borderColor: "#FCA5A5",
+  },
   input: {
     flex: 1,
-    padding: 12,
+    paddingVertical: 14,
+    marginLeft: 10,
+    fontSize: 16,
+    color: "#1F2937",
   },
-
   button: {
     backgroundColor: "#007BFF",
-    padding: 16,
+    paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 8,
   },
-
+  buttonPressed: {
+    opacity: 0.8,
+  },
+  buttonDisabled: {
+    backgroundColor: "#93C5FD",
+  },
   buttonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
-
+  footer: {
+    marginTop: 20,
+    alignItems: "center",
+    gap: 16,
+  },
+  footerText: {
+    fontSize: 14,
+    color: "#6B7280",
+  },
   link: {
-    marginTop: 14,
-    textAlign: "center",
+    fontSize: 14,
     color: "#007BFF",
-    fontWeight: "500",
+    fontWeight: "600",
   },
-
-  error: {
-    color: "red",
-    marginBottom: 10,
-  },
-
-}); 
+});

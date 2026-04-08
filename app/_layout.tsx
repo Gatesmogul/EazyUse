@@ -1,4 +1,3 @@
-// app/_layout.tsx
 import React, { useState, useEffect } from "react";
 import { Stack } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,30 +7,26 @@ import { ActivityIndicator, View } from "react-native";
 // Import your Firebase auth instance
 import { auth } from "../backend/services/firebase";
 
+// Initialize the Query Client outside the component
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
 
-  /**
-   * AUTHENTICATION LISTENER
-   * Listens for changes in the user's sign-in state (login, logout, or session restore)
-   */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      if (initializing) setInitializing(false);
+      setInitializing(false);
     });
 
-    // Cleanup subscription on unmount
     return unsubscribe;
   }, []);
 
-  // Show a loading screen while Firebase checks if a session exists
+  // 1. Loader: Keep this inside the component but BEFORE the return
   if (initializing) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
         <ActivityIndicator size="large" color="#007BFF" />
       </View>
     );
@@ -45,21 +40,18 @@ export default function RootLayout() {
           animation: "slide_from_right",
         }}
       >
+        {/* The Conditional Switch: 
+          This is what removes the tab icons from the sign-in screen.
+        */}
         {!user ? (
-          /* If user is null, only the (auth) group is accessible.
-             This effectively hides the (tabs) and prevents the tab bar from rendering.
-          */
           <Stack.Screen 
             name="(auth)" 
             options={{ 
               headerShown: false,
-              // Disallow swiping back to the app from login
               gestureEnabled: false 
             }} 
           />
         ) : (
-          /* Once 'user' is populated, the app switches to (tabs).
-          */
           <Stack.Screen 
             name="(tabs)" 
             options={{ 
@@ -69,9 +61,9 @@ export default function RootLayout() {
           />
         )}
 
-        {/* The index screen. If this is a splash screen, it stays here. 
-           If it's a landing page that shouldn't show after login, 
-           consider moving it inside the (auth) block.
+        {/* IMPORTANT: Remove "index" from here if your app/index.tsx 
+          is just a redirector. If you keep it here, ensure it 
+          doesn't contain a <Tabs /> component.
         */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack>
